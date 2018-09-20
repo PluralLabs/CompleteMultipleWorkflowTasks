@@ -1,0 +1,21 @@
+﻿<AML>
+ <Item type="Item Action" id="D52D021D8CB240AB9F746BA55CFD0170" action="add">
+  <related_id keyed_name="ag_ProcessSelectedTasks" type="Action">
+   <Item type="Action" id="C83B450D80094971966E07125038D701" action="add">
+    <item_query>&lt;Item type="{@type}" id="{@id}" levels= "1" action="get" /&gt;</item_query>
+    <label xml:lang="en">Process Workflow Tasks</label>
+    <location>client</location>
+    <method keyed_name="ag_getSelectedWorkflowTasks" type="Method">
+     <Item type="Method" action="get" select="id">
+      <name>ag_getSelectedWorkflowTasks</name>
+     </Item>
+    </method>
+    <target>none</target>
+    <type>itemtype</type>
+    <name>ag_ProcessSelectedTasks</name>
+   </Item>
+  </related_id>
+  <sort_order>128</sort_order>
+  <source_id keyed_name="Workflow Task" type="ItemType" name="Workflow Task">321BD822949149C597FD596B1212B85C</source_id>
+ </Item>
+</AML>

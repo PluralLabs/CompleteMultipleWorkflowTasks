@@ -1,0 +1,174 @@
+﻿<AML>
+ <Item type="Method" id="6EB6D0BAD8BE4125B2392C91B47DB8F3" action="add">
+  <execution_allowed_to keyed_name="World" type="Identity">A73B655731924CD0B027E4F4D5FCC0A9</execution_allowed_to>
+  <method_code><![CDATA[//Created by : Ajinkya Gaikwad
+//Created on : 22 AUGUST 2018
+//Purpose : 
+
+var inno = new Innovator();
+
+var selectedIds = "";
+var aWindow = TopWindowHelper.getMostTopWindowWithAras(window);
+aWindow = aWindow.main;
+var gridApplet;
+var itemArray;
+
+if(aWindow)
+{
+	gridApplet = top.main.work.gridApplet;
+	selectedIds = gridApplet.GetSelectedItemIDs(",");
+	if(!selectedIds){
+		return alert("Please select atleast one item to execute this Action.");
+	}
+}
+if(!aWindow) 
+{
+	selectedIds = parent.itemID;
+}
+
+
+var isModalDialog = !!(window.frameElement && window.frameElement.dialogArguments);
+var aras = isModalDialog ? window.frameElement.dialogArguments.aras : parent.parent.aras;
+var topWnd = parent.parent;
+
+//Note: rowID always gives you single item id even though multiple items are selected from the grid.
+var rowID = rowID || gridApplet.getSelectedId();
+
+var AssgnIdArr = new Array();
+//If multiple InBasket Tasks are selected by user.
+if(selectedIds.length>32)
+{
+    rowID = selectedIds;
+    AssgnIdArr = rowID.split(",");
+}
+else
+{
+    AssgnIdArr[0] = rowID;
+}
+
+//variable declaration
+var InBasketItm, WorkflowProcessName, WorkflowID, WorkflowItm, WrkProcActvt, ActivityID, ActivityItem, ActivityNd, itemId;
+//new variables
+var WrkflwID="", WrkflwProcName=""; var ActivityNode; var ActivityIdsStr = ""; 
+var ActivityNdArray = new Array();
+var ActivityIdArr = new Array();
+
+//GET InBasket Item from rowID.
+InBasketItm = inno.applyAML("<AML><Item type='InBasket Task' action='get'><id condition='in'>"+ rowID +"</id></Item></AML>");
+
+if(!InBasketItm.isError())
+{
+    var TskCount = InBasketItm.getItemCount();
+    
+    for(var i=0; i<TskCount; i++)
+    {
+        var TskItem = InBasketItm.getItemByIndex(i);
+        
+        WorkflowProcessName = TskItem.getPropertyAttribute("container","keyed_name");
+        WorkflowID = TskItem.getProperty("container");
+        
+        //GET Work Item Id.
+        itemId = TskItem.getProperty("item");
+        
+        //GET Workflow Item.
+        WorkflowItm = GetWorkflowProcessItem(WorkflowID);
+        
+        //GET Workflow Process Activity.
+        WrkProcActvt = WorkflowItm.getItemsByXPath("Relationships/Item[@type='Workflow Process Activity']");
+        ActivityID = WrkProcActvt.getProperty("related_id");
+        
+        // ActivityIdsStr = ActivityIdsStr + "," + ActivityID; //append Activity Ids in comma separated string.
+        ActivityIdArr[i] = ActivityID;    //push Activity Ids in Array.
+        
+        //GET Activity Item.
+        ActivityItem = GetActivityItem(ActivityID);
+        ActivityNd = ActivityItem.node;
+        
+        ActivityNdArray[i] = ActivityNd;    //push Activity Nodes in Array.
+        
+        //store & pass 1st item values.
+        if(i===0)
+        {
+            ActivityNode = ActivityNd;
+            WrkflwProcName = WorkflowProcessName;
+            WrkflwID = WorkflowID;
+        }
+        
+    }
+    
+}
+
+
+var params = { 
+    			aras: aras,
+    			activityNodes: ActivityNdArray, //added by Ajinkya.
+    			activityIds: ActivityIdArr, //added by Ajinkya.
+    			assignmentIds: AssgnIdArr,    //added by Ajinkya.
+    			activity: ActivityNode,
+    			wflName: WrkflwProcName,
+    			wflId: WrkflwID,
+    			assignmentId: rowID,    //rowID is passed so that this task should be assigned to the identity(if delegated).
+    			itemId: itemId,         //Work Item id.
+    			parent: "InBasket",
+    			dialogWidth: 700,
+    			dialogHeight: 550,
+    			resizable: true,
+    			scroll: true,
+    			content: "InBasket/InBasket-VoteDialog.aspx"
+            };
+
+var win = aras.getMostTopWindowWithAras(window);
+    (win.main || win).ArasModules.Dialog.show('iframe', params).promise.then(
+    function(res){
+    
+});
+
+
+//////////////////////////////////// FUNCTION REGION ////////////////////////////////////
+function GetWorkflowProcessItem(WorkflowProcessID)
+{
+    var qryWorkflowProcess = "<AML>"+
+                            	"<Item type='Workflow Process' action='get' select='id,keyed_name'>"+
+                            		"<id>" + WorkflowID + "</id>"+
+                            		"<Relationships>"+
+                            			"<Item type='Workflow Process Activity' action='get' select='id,keyed_name,related_id'>"+
+                            				"<related_id>"+
+                            					"<Item type='Activity' action='get' select='id,keyed_name,state'>"+
+                            						"<state>Active</state>"+
+                            							"<Relationships>"+
+                            								"<Item type='Workflow Process Path' action='get' select='id,related_id'></Item>"+
+                            							"</Relationships>"+
+                            					"</Item>"+
+                            				"</related_id>"+
+                            			"</Item>"+
+                            		"</Relationships>"+
+                            	"</Item>"+
+                            "</AML>";
+                            
+    var WrkflwProc = inno.applyAML(qryWorkflowProcess);
+    
+    return WrkflwProc;
+}
+
+function GetActivityItem(ActivityID)
+{
+    var amlGetActivity = "<AML>"+
+    "<Item type='Activity' action='get'>"+
+    "<id>"+ActivityID+"</id>"+
+    "<Relationships>"+
+    "<Item type='Workflow Process Path' action='get'>"+
+    "</Item>"+
+    "</Relationships>"+
+    "</Item>"+
+    "</AML>";
+    
+    var Activt = inno.applyAML(amlGetActivity);
+    return Activt;
+}
+
+//////////////////////////////////// FUNCTION REGION ENDS ////////////////////////////////////
+return;]]></method_code>
+  <method_type>JavaScript</method_type>
+  <name>ag_getSelectedWorkflowTasks</name>
+ </Item>
+</AML>

@@ -1,0 +1,3 @@
+<imports>
+  <package name="CompleteMultipleWorkflowTasks" path="CompleteMultipleWorkflowTasks\Import" />
+</imports>

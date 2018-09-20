@@ -1,0 +1,15 @@
+﻿<AML>
+ <Item type="Action" id="C83B450D80094971966E07125038D701" action="add">
+  <item_query>&lt;Item type="{@type}" id="{@id}" levels= "1" action="get" /&gt;</item_query>
+  <label xml:lang="en">Process Workflow Tasks</label>
+  <location>client</location>
+  <method keyed_name="ag_getSelectedWorkflowTasks" type="Method">
+   <Item type="Method" action="get" select="id">
+    <name>ag_getSelectedWorkflowTasks</name>
+   </Item>
+  </method>
+  <target>none</target>
+  <type>itemtype</type>
+  <name>ag_ProcessSelectedTasks</name>
+ </Item>
+</AML>
